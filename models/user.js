@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
 	{
-		_id: Schema.Types.ObjectId,
 		name: {
 			type: String,
 			trim: true,
@@ -65,9 +65,22 @@ const userSchema = new Schema(
 		history: { type: Array, default: [] },
 		terms: { type: Boolean, default: false },
 		copyRight: { type: Boolean, default: false },
+		token: { type: String },
 	},
 	{ timestamps: true }
 );
+
+const generateResetPasswordToken = function () {
+	const resetPasswordToken = crypto.randomBytes(20).toString('hex');
+	this.resetPasswordToken = crypto
+		.createHash('sha256')
+		.update(resetPasswordToken)
+		.digest('hex');
+	this.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+	return resetPasswordToken;
+};
+
+userSchema.methods.generateResetPasswordToken = generateResetPasswordToken;
 
 mongoose.models = {};
 
