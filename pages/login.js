@@ -8,7 +8,7 @@ import {
 } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Router, { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { FcGoogle } from 'react-icons/fc';
 
@@ -20,7 +20,14 @@ const Login = () => {
 
 	useEffect(() => {
 		if (status === 'authenticated') {
-			router.push('/');
+			if (
+				window.history.length > 1 &&
+				document.referrer.indexOf(window.location.host) !== -1
+			) {
+				Router.back();
+			} else {
+				Router.replace('/');
+			}
 		}
 	}, [status]);
 
@@ -35,8 +42,14 @@ const Login = () => {
 		});
 
 		if (!result.error) {
-			toast.success('Successfully logged in!');
-			router.push('/');
+			if (
+				window.history.length > 1 &&
+				document.referrer.indexOf(window.location.host) !== -1
+			) {
+				Router.back();
+			} else {
+				Router.replace('/');
+			}
 		} else {
 			toast.error('Invalid email or password');
 		}
@@ -154,11 +167,8 @@ const Login = () => {
 							</div>
 
 							<div className="mt-6 grid grid-cols-1 gap-3">
-								<Link href="/sign-up" passHref>
-									<a
-										href="#"
-										className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-									>
+								<Link href="/register" passHref>
+									<a className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
 										Sign up
 									</a>
 								</Link>
