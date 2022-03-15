@@ -38,7 +38,7 @@ const sendResetPasswordLink = async (req, res) => {
 		// console.log(user.token);
 		// const res2 = await user.save();
 		// console.log(res2);
-		const resetLink = `http://localhost:3000/api/auth/reset?token=${token}`;
+		const resetLink = `http://localhost:3000/forgot-password/${token}`;
 		console.log(resetLink);
 		console.log('Google Email: ' + process.env.GOOGLE_EMAIL);
 		const transporter = nodemailer.createTransport({
