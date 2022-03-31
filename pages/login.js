@@ -5,6 +5,7 @@ import {
 	useSession,
 	getProviders,
 	getCsrfToken,
+	getSession,
 } from 'next-auth/react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -232,11 +233,22 @@ const Login = () => {
 		</>
 	);
 };
-export async function getServerSideProps(context) {
-	return {
-		props: {
-			csrfToken: await getCsrfToken(context),
-		},
-	};
+export async function getServerSideProps(ctx) {
+	const session = await getSession(ctx);
+	const headers = ctx.req.headers;
+	if (session) {
+		return {
+			redirect: {
+				destination: '/',
+				permanent: false,
+			},
+		};
+	} else {
+		return {
+			props: {
+				headers,
+			},
+		};
+	}
 }
 export default Login;

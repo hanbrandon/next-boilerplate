@@ -4,6 +4,8 @@ import User from '../../models/user';
 import { getSession } from 'next-auth/react';
 
 export const handler = async (req, res) => {
+	console.log('hi');
+
 	const { method } = req;
 	await dbConnect();
 	// switch the methods
@@ -14,41 +16,12 @@ export const handler = async (req, res) => {
 		case 'PUT':
 			await updateUser(req, res);
 			break;
-		// case 'POST':
-		//   await addDummyUser(req, res);
 		default:
 			res.status(400).json({ success: false });
 			break;
 	}
 };
 
-// const addDummyUser = async (req, res) => {
-//   for (let i = 0; i < 50; i++) {
-//     let userData = {
-//       name: `user${i}`,
-//       email: `user${i}@gmail.com`,
-//       image:
-//         'https://lh3.googleusercontent.com/a-/AOh14Gj08kUYGrjfqeyU47VYffI4O7Z50DVrRz5h6e1N4g=s96-c',
-//       emailVerified: null,
-//       facebook: 'facebook.com',
-//       instagram: 'instagram.com',
-//       nickname: `user${i} nickname`,
-//       role: 2,
-//       updatedAt: '2022-01-28T16:53:28.337Z',
-//       website: 'sanghyun.com',
-//       youtube: 'youtube.com',
-//       copyRight: true,
-//       terms: true,
-//       password: 'sdfsdf233f',
-//     };
-//     try {
-//       const user = await User.create(userData);
-//     } catch (error) {}
-//   }
-//   return {
-//     message: 'success',
-//     success: true,
-//   };
 // };
 
 const getUser = async (req, res) => {
@@ -56,13 +29,14 @@ const getUser = async (req, res) => {
 	if (session) {
 		try {
 			const user = await User.findById({
-				_id: req.query.uid,
+				_id: session.user.id,
 			});
 			return res.status(200).json({
 				user: user,
 				success: true,
 			});
 		} catch (error) {
+			console.log(error);
 			return res.status(400).json({
 				message: new Error(error).message,
 				success: false,
