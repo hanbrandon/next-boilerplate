@@ -20,8 +20,9 @@ const HomePage = () => {
 export const getServerSideProps = async (ctx) => {
 	const session = await getSession(ctx);
 	const headers = ctx.req.headers;
+	console.log(process.env.NEXTAUTH_URL);
 	if (session) {
-		const response = await axios.get(`${process.env.API_URL}/api/user`, {
+		const response = await axios.get(`${process.env.NEXTAUTH_URL}/api/user`, {
 			headers: { Cookie: headers.cookie },
 		});
 		return {
@@ -32,7 +33,7 @@ export const getServerSideProps = async (ctx) => {
 	} else {
 		return {
 			redirect: {
-				pathname: '/login',
+				destination: '/login',
 				permanent: false,
 			},
 		};
