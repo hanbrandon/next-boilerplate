@@ -12,25 +12,19 @@ import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import toast from 'react-hot-toast';
 import { FcGoogle } from 'react-icons/fc';
+import { useCookies } from 'react-cookie';
 
 const Login = () => {
 	const emailRef = useRef();
 	const passwordRef = useRef();
+	const remember_me = useRef();
 	const { data: session, status } = useSession();
 	const router = useRouter();
+	const [cookies, setCookie] = useCookies(['remember']);
 
-	useEffect(() => {
-		if (status === 'authenticated') {
-			if (
-				window.history.length > 1 &&
-				document.referrer.indexOf(window.location.host) !== -1
-			) {
-				Router.back();
-			} else {
-				Router.replace('/');
-			}
-		}
-	}, [status]);
+	const onRememberMeChange = () => {
+		setCookie('remember', remember_me.current.checked);
+	};
 
 	const onSubmitHandler = async (e) => {
 		console.log('onSubmitHandler');
@@ -39,20 +33,21 @@ const Login = () => {
 			redirect: false,
 			email: emailRef.current.value,
 			password: passwordRef.current.value,
+			remember: remember_me.current.checked,
 			callbackUrl: '/',
 		});
-
 		if (!result.error) {
-			if (
-				window.history.length > 1 &&
-				document.referrer.indexOf(window.location.host) !== -1
-			) {
-				Router.back();
+			if (router.query.next) {
+				if (router.asPath.split('/login?next=/')[1] === '') {
+					Router.replace('/');
+				} else {
+					Router.replace(router.asPath.replace('/login?next=', ''));
+				}
 			} else {
 				Router.replace('/');
 			}
 		} else {
-			toast.error('Invalid email or password');
+			toast.error(result.error);
 		}
 	};
 
@@ -123,10 +118,12 @@ const Login = () => {
 							<div className="flex items-center justify-between">
 								<div className="flex items-center">
 									<input
+										ref={remember_me}
 										id="remember_me"
 										name="remember_me"
 										type="checkbox"
 										className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+										onChange={() => onRememberMeChange()}
 									/>
 									<label
 										htmlFor="remember_me"

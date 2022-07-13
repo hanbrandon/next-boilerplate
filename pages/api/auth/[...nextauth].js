@@ -11,73 +11,86 @@ import { MongoClient } from 'mongodb';
 
 import { verifyPassword } from '../../../lib/auth';
 import { connectToDatabase } from '../../../lib/db';
+const { parseCookies, setCookie, destroyCookie } = require('nookies');
 
 import dbConnect from '../../../lib/dbConnect';
 
-export default NextAuth({
-  providers: [
-    CredentialsProvider({
-      async authorize(credentials) {
-        //Connect to DB
-        const client = await connectToDatabase();
+export default async function auth(req, res) {
+	const cookies = parseCookies({ req });
+	const maxAge =
+		cookies.remember === 'true' ? 30 * 24 * 60 * 60 : 1 * 24 * 60 * 60; // 30 days, 1 day
 
-        const usersCollection = await client.db().collection('users');
-        const result = await usersCollection.findOne({
-          email: credentials.email,
-        });
+	return await NextAuth(req, res, {
+		providers: [
+			CredentialsProvider({
+				async authorize(credentials) {
+					//Connect to DB
+					const client = await connectToDatabase();
+					// console.log(credentials);
+					const usersCollection = await client.db().collection('users');
+					const result = await usersCollection.findOne({
+						email: credentials.email,
+					});
 
-        if (!result) {
-          client.close();
-          throw new Error('No user found!');
-        }
+					if (!result) {
+						client.close();
+						throw new Error('No user found!');
+					}
 
-        const isValid = await verifyPassword(
-          credentials.password,
-          result.password
-        );
+					const isValid = await verifyPassword(
+						credentials.password,
+						result.password
+					);
 
-        if (!isValid) {
-          client.close();
-          throw new Error('Could not log you in!');
-        }
+					if (!isValid) {
+						client.close();
 
-        client.close();
-        const user = {
-          id: result._id,
-          email: result.email,
-          name: result.name,
-          role: result.role,
-        };
-        return user;
-      },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_ID,
-      clientSecret: process.env.GOOGLE_SECRET,
-    }),
-  ],
-  adapter: MongoDBAdapter(clientPromise),
-  callbacks: {
-    // called after sucessful signin
-    jwt: async ({ token, user }) => {
-      user && (token.user = user);
-      return token;
-    }, // called whenever session is checked
-    session: async ({ session, token }) => {
-      session.user = token.user;
-      return session;
-    },
-  },
-  secret: process.env.SECRET_KEY,
-  session: {
-    strategy: 'jwt',
-    maxAge: 1 * 24 * 60 * 60, // 1d
-  },
-  jwt: {
-    secret: process.env.SECRET_KEY,
-    encryption: true,
-  },
-  pages: {
-    signIn: './login',
-  },
-});
+						throw new Error('Could not log you in!');
+					}
+
+					client.close();
+					const user = {
+						id: result._id,
+						email: result.email,
+						name: result.name,
+						role: result.role,
+						remember: credentials.remember,
+					};
+
+					return user;
+				},
+			}),
+
+			GoogleProvider({
+				clientId: process.env.GOOGLE_ID,
+				clientSecret: process.env.GOOGLE_SECRET,
+			}),
+		],
+
+		adapter: MongoDBAdapter(clientPromise),
+		callbacks: {
+			// called after sucessful signin
+			jwt: async ({ token, user }) => {
+				user && (token.user = user);
+				return token;
+			}, // called whenever session is checked
+			session: async (data) => {
+				const { session, token } = data;
+				session.user = token.user;
+				return session;
+			},
+		},
+		secret: process.env.SECRET_KEY,
+		session: {
+			strategy: 'jwt',
+			maxAge: maxAge,
+		},
+		jwt: {
+			secret: process.env.SECRET_KEY,
+			encryption: true,
+		},
+		pages: {
+			signIn: './login',
+		},
+	});
+}

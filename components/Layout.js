@@ -12,6 +12,7 @@ import {
 	XIcon,
 } from '@heroicons/react/outline';
 import { SearchIcon } from '@heroicons/react/solid';
+import toast, { Toaster } from 'react-hot-toast';
 
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -20,6 +21,7 @@ const Layout = ({ children }) => {
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	return (
 		<div>
+			<Toaster position="bottom-right" reverseOrder={false} />
 			<div className="h-screen flex overflow-hidden bg-gray-100">
 				<Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 				<div className="flex flex-col w-0 flex-1 overflow-hidden">

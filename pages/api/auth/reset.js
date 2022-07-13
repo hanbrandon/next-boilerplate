@@ -30,7 +30,6 @@ const sendResetPasswordLink = async (req, res) => {
 				success: false,
 			});
 		}
-		console.log(user);
 		const token = user.generateResetPasswordToken();
 
 		const user2 = await User.findOneAndUpdate(email, { token: token });
@@ -39,7 +38,6 @@ const sendResetPasswordLink = async (req, res) => {
 		// const res2 = await user.save();
 		// console.log(res2);
 		const resetLink = `http://localhost:3000/forgot-password/${token}`;
-		console.log(resetLink);
 		console.log('Google Email: ' + process.env.GOOGLE_EMAIL);
 		const transporter = nodemailer.createTransport({
 			service: 'gmail',
@@ -48,7 +46,6 @@ const sendResetPasswordLink = async (req, res) => {
 				pass: process.env.GOOGLE_PASSWORD,
 			},
 		});
-		console.log('hi');
 		const mailOptions = {
 			from: 'h7143084090@gmail.com',
 			to: email,

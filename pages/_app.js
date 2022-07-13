@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import { CookiesProvider } from 'react-cookie';
 
 import { SessionProvider } from 'next-auth/react';
 
@@ -9,8 +10,10 @@ export default function App({
 	return (
 		// `session` comes from `getServerSideProps` or `getInitialProps`.
 		// Avoids flickering/session loading on first load.
-		<SessionProvider session={session} refetchInterval={5 * 60}>
-			<Component {...pageProps} />
-		</SessionProvider>
+		<CookiesProvider>
+			<SessionProvider session={session} refetchInterval={5 * 60}>
+				<Component {...pageProps} />
+			</SessionProvider>
+		</CookiesProvider>
 	);
 }

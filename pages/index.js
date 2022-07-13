@@ -7,7 +7,7 @@ import axios from 'axios';
 const HomePage = () => {
 	const { data: session, status } = useSession();
 	const router = useRouter();
-
+	console.log(session);
 	// useEffect(() => {
 	// 	if (status === 'unauthenticated') {
 	// 		router.push('/login');
